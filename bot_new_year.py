@@ -111,8 +111,7 @@ def user_insertation(user_id, wish):
 		'id': user_id,
 		'prompt': wish
     }
-    result_func = 'Ваше побажання записане !'
-	
+    result_func = 'Ваше побажання записане !'	
     collection_wishes.insert_one(wishes_list)
 	
     return result_func
@@ -121,7 +120,6 @@ def user_insertation(user_id, wish):
 
 @dp.message_handler(commands=['start'])
 async def start_buttons(message: types.Message):
-
     keyboard_main=ReplyKeyboardMarkup(
         [
             [
@@ -141,9 +139,7 @@ async def start_buttons(message: types.Message):
     await message.answer(
 
         f'Привет, *{message.from_user.first_name}*!\n\nВот список функий:',
-
         reply_markup=keyboard_main,
-
         parse_mode='Markdown',
 
     )
@@ -152,12 +148,10 @@ async def start_buttons(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == '🎅 Новорічне передбачення від ШІ', state=None)
 async def prediction(message: types.Message):
-
 	await message.answer(f'Передбачення від ШІ на прийдешній рік для нашої країни : "{ai_list()}"')
 
 @dp.message_handler(lambda message: message.text == '🎄 Побажати щось', state=None)
 async def wish_keyboard(message: types.Message):
-	
 	keyboard_wish=ReplyKeyboardMarkup(
         [
             [
@@ -174,48 +168,40 @@ async def wish_keyboard(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == '🔙 На головну', state=None)
 async def back(message: types.Message):
-
     await message.reply('Виконано !', reply_markup=keyboard_main)
 
 @dp.message_handler(lambda message: message.text == '👌 Так', state=None)
 async def create_wish(message: types.Message):
-
 	await ClientStates.wish.set()
 	await message.answer('Введіть побажання :')
 	
 @dp.message_handler(state=ClientStates.wish)
 async def load_wish(message: types.Message, state: FSMContext):
 	async with state.proxy() as data:
-
 		data['wish'] = message.text
 		user_id = message.from_user.username
 		users_records = collection_wishes.find_one({'id': user_id})
 		user_text = message.text
 
 		if user_text == '🔙 На головну':
-
 			await message.reply('Виконано!', reply_markup=keyboard_main)
 			await state.finish()
 			
 		elif user_text in check_in:
-
 			await state.finish()
 			await message.answer('Антиспам', reply_markup=keyboard_main)
 		
 		elif users_records == None:
-			
 			await message.reply(f"{user_insertation(user_id, data['wish'])}")
-		else:
 			
+		else:
 			await message.reply('Ви вже відправляли побажання або у вас не встановлений унікальний ID у налаштуваннях')
 			await message.answer('Негайно встановіть унікальний ID у телеграм для коректної роботи із застосунком')
 			await state.finish()
 
 @dp.message_handler(lambda message: message.text == '📖 Подивитися на дошку побажань', state=None)
-async def prediction(message: types.Message):
-	
+async def prediction(message: types.Message):	
     array = collection_wishes.find({}, {'id': 1, 'prompt': 1})
-
     response = "Список побажань:\n"
     for user in array:
         response += f"\n@{user['id']} - {user['prompt']}\n"
@@ -223,9 +209,9 @@ async def prediction(message: types.Message):
         if user['prompt'] == 'null':
             response = re.sub(substring_to_remove, "", response)
 	
-
     if len(response) <= 4096:
         await message.reply(response)
+	    
     else:
         while response:
             chunk, response = response[:4096], response[4096:]
@@ -234,5 +220,4 @@ async def prediction(message: types.Message):
 #bot pooling
 
 if __name__ == '__main__':
-
 	executor.start_polling(dp, skip_updates=True)
