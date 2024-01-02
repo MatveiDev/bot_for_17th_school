@@ -15,6 +15,7 @@ from aiogram.types import (
 )
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from config import API_TOKEN
+from config import CLUSTER_URL
 
 #api_token
 
@@ -24,7 +25,7 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 
 #database
 
-cluster = MongoClient('mongodb+srv://matveidev:antipova1977@cluster0.sfhubs3.mongodb.net/')
+cluster = MongoClient(f'{CLUSTER_URL}')
 
 db = cluster['DB_NY']
 collection_wishes = db['collection_wishes']
